@@ -153,6 +153,13 @@ class Toychain {
       return next;
     }
   }
+  view(o) {
+    return this.chain.view(o)
+  }
+  discard(o) {
+    this.chain.discard(o)
+    this.tx.discard(o)
+  }
   clone(o) {
     let tx;
     try {

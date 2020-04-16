@@ -7,6 +7,7 @@ const path = require('path')
 const wallet = new Wallet({ xpriv: <xprivKey string> })
 const tx = new Tx(wallet)
 tx.add(<bsv.Transaction object>)                                // Add to tx db
+tx.discard({ id: <txid> })                                      // Discard tx chain by root tx hash
 tx.get({ id: <txid> })                                          // get tx by id
 tx.get()                                                        // get all unsent txs
 tx.push({ id: <txid> })                                         // push tx by id
@@ -53,6 +54,14 @@ class Tx {
       tx: transaction.toString("hex"),
       sent: 0
     })
+  }
+  // PLACEHOLDER
+  discard(o) {
+    if (o) {
+      console.log("tx if block");
+    } else {
+      console.log("tx else block");
+    }
   }
   get(o) {
     if (o && ("id" in o)) {

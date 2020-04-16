@@ -19,6 +19,8 @@ chain.add({
   edge: <parent UTXO>,
   spent: 0|1
 })
+chain.view({ id: <txid> })                                // View tx chain by root tx hash
+chain.discard({ id: <txid> })                             // Discard tx chain by root tx hash
 chain.get({ id: <id> })                                   // Get output by id
 chain.last()                                              // Get the last output
 chain.reset()                                             // Delete all items on the chain
@@ -88,6 +90,38 @@ class Chain {
 
     // 2. Update the "spend" attribute of the parent outputs to 1
     this.DB.prepare(`UPDATE chain SET spent=1 WHERE id IN (${o.parent.map(() => '?').join(',')})`).run(o.parent)
+  }
+  view(o) {
+    if (o) {
+      console.log("SUBCHAIN ITEMS FROM PARENT: ", o )
+      // 1. Recursively find the transaction dependency chain from the given tx hash
+      const sql = `WITH recursive tc( id, tx, parent, edge, spent ) AS 
+      ( 
+             SELECT chain.id, chain.tx, chain.parent, chain.edge, chain.spent
+             FROM   chain
+             WHERE  chain.tx = ?
+             UNION 
+             SELECT chain.id, chain.tx, chain.parent, chain.edge, chain.spent
+             FROM   chain, 
+                    tc, json_each(chain.parent)
+             WHERE  json_each.value LIKE tc.id )
+      SELECT *
+      FROM   tc;`
+      // 2. Log the transaction and its chain of children
+      return console.log(this.DB.prepare(sql).all(o));
+    } else {
+      const items = this.get()
+      return console.log("TOYCHAIN ITEMS: ", items);
+    }
+  }
+  discard(o) {
+    if (o) {
+      console.log('chain discarding...')
+      // Delete the recursive tx chain
+      // TODO: think about impact on UTXO and tx db
+    } else {
+      // else block
+    }
   }
   get(q) {
     if (q && ('id' in q)) {
